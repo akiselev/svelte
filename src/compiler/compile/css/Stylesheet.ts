@@ -34,7 +34,7 @@ function minify_declarations(
 			code.overwrite(c, declaration.node.start, separator);
 		}
 		declaration.minify(code);
-		c = declaration.node.end;
+		c = declaration.node.end + 1;
 	});
 
 	return c;
