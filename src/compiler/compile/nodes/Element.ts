@@ -523,11 +523,18 @@ export default class Element extends Node {
 	}
 
 	validate_bindings_foreign() {
-		this.bindings.forEach(binding => {
-			if (binding.name !== 'this') {
-				return this.component.error(binding, compiler_errors.invalid_binding_foreign(binding.name));
-			}
-		});
+		/**
+		 * SVELTERS CHANGE
+		 * 
+		 * Skip checks for foreign bindings
+		 * 
+		 * TODO: Actually validate these bindings using codegen
+		 */
+		// this.bindings.forEach(binding => {
+		// 	if (binding.name !== 'this') {
+		// 		return this.component.error(binding, compiler_errors.invalid_binding_foreign(binding.name));
+		// 	}
+		// });
 	}
 
 	validate_bindings() {

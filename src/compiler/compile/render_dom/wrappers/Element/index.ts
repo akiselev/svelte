@@ -406,6 +406,21 @@ export default class ElementWrapper extends Wrapper {
 					.filter(binding => event.filter(this.node, binding.node.name))
 			}))
 			.filter(group => group.bindings.length);
+		/**
+		 * SVELTERS CHANGE
+		 * 
+		 * Add bindings for GTK notify events
+		 * 
+		 * TODO: Use above map/filter combo with codegen
+		 */
+		this.bindings
+			.filter(binding => binding.node.name !== 'this')
+			.forEach(binding => {
+				binding_groups.push({
+					events: [`notify:${binding.node.name}`],
+					bindings: [binding]
+				})
+			});
 
 		const this_binding = this.bindings.find(b => b.node.name === 'this');
 
@@ -454,8 +469,9 @@ export default class ElementWrapper extends Wrapper {
 			null;
 
 		if (lock) block.add_variable(lock, x`false`);
-
-		const handler = renderer.component.get_unique_name(`${this.var.name}_${binding_group.events.join('_')}_handler`);
+		
+		const binding_name = binding_group.events.join('_').replace(/:/g, "_").replace(/-/g, "_");
+		const handler = renderer.component.get_unique_name(`${this.var.name}_${binding_name}_handler`);
 		renderer.add_to_context(handler.name);
 
 		// TODO figure out how to handle locks
