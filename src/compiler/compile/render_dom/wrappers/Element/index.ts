@@ -417,7 +417,7 @@ export default class ElementWrapper extends Wrapper {
 			.filter(binding => binding.node.name !== 'this')
 			.forEach(binding => {
 				binding_groups.push({
-					events: [`notify:${binding.node.name}`],
+					events: [`notify::${binding.node.name}`],
 					bindings: [binding]
 				})
 			});
