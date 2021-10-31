@@ -419,5 +419,12 @@ function get_value_from_dom(
 	}
 
 	// everything else
-	return x`this.${name}`;
+	/**
+	 * SVELTERS CHANGE
+	 * 
+	 * Need to access element inside class
+	 * 
+	 * TODO: Use codegen
+	 */
+	return x`this.$.${name}`;
 }

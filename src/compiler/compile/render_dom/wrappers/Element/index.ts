@@ -1,3 +1,8 @@
+
+import {
+	paramCase,
+  } from "change-case";
+
 import Renderer from '../../Renderer';
 import Element from '../../../nodes/Element';
 import Wrapper from '../shared/Wrapper';
@@ -26,6 +31,7 @@ import Action from '../../../nodes/Action';
 import MustacheTagWrapper from '../MustacheTag';
 import RawMustacheTagWrapper from '../RawMustacheTag';
 import is_dynamic from '../shared/is_dynamic';
+import { BINDING_EVENTS } from "../../../../overrides";
 
 interface BindingGroup {
 	events: string[];
@@ -416,8 +422,14 @@ export default class ElementWrapper extends Wrapper {
 		this.bindings
 			.filter(binding => binding.node.name !== 'this')
 			.forEach(binding => {
+				let name = binding.node.name;
+				if (typeof BINDING_EVENTS[name] === "string") {
+					name = BINDING_EVENTS[name]
+				} else {
+					name = paramCase(name);
+				}
 				binding_groups.push({
-					events: [`notify::${binding.node.name}`],
+					events: [`notify::${name}`],
 					bindings: [binding]
 				})
 			});
@@ -497,7 +509,12 @@ export default class ElementWrapper extends Wrapper {
 			block.add_variable(animation_frame);
 		}
 
-		const has_local_function = contextual_dependencies.size > 0 || needs_lock || animation_frame;
+		/**
+		 * SVELTERS CHANGE
+		 * 
+		 * Always create a local function and bind element
+		 */
+		const has_local_function = true;
 
 		let callee = renderer.reference(handler);
 
