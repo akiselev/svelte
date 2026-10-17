@@ -29,9 +29,15 @@ export function BindDirective(node, context) {
 		parent?.type === 'SvelteBody'
 	) {
 		if (custom_renderer) {
-			e.incompatible_with_custom_renderer(node, '`bind:`');
-		}
-		if (node.name in binding_properties) {
+			// the renderer decides what each binding means, so only the targets and
+			// bindings that can't be expressed through `renderer.bind` are rejected
+			if (parent.type !== 'RegularElement' && parent.type !== 'SvelteElement') {
+				e.incompatible_with_custom_renderer(node, `\`bind:\` on \`<${parent.name}>\``);
+			}
+			if (node.name === 'group') {
+				e.incompatible_with_custom_renderer(node, '`bind:group`');
+			}
+		} else if (node.name in binding_properties) {
 			const property = binding_properties[node.name];
 			if (property.valid_elements && !property.valid_elements.includes(parent.name)) {
 				e.bind_invalid_target(

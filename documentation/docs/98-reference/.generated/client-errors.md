@@ -30,6 +30,12 @@ Component %component% has an export named `%key%` that a consumer component is t
 A component is attempting to bind to a non-bindable property `%key%` belonging to %component% (i.e. `<%name% bind:%key%={...}>`). To mark a property as bindable: `let { %key% = $bindable() } = $props()`
 ```
 
+### bind_unsupported_by_renderer
+
+```
+The custom renderer does not support `bind:%name%` on elements. A renderer must implement `bind` to support element bindings other than `bind:this`
+```
+
 ### component_api_changed
 
 ```

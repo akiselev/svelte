@@ -163,7 +163,7 @@ export function RegularElement(node, context) {
 		}
 	}
 
-	if (name === 'input') {
+	if (name === 'input' && !custom_renderer) {
 		const has_value_attribute = attributes.some(
 			(attribute) =>
 				attribute.type === 'Attribute' &&
@@ -192,7 +192,7 @@ export function RegularElement(node, context) {
 		}
 	}
 
-	if (name === 'textarea') {
+	if (name === 'textarea' && !custom_renderer) {
 		const attribute = lookup.get('value') ?? lookup.get('checked');
 		const needs_content_reset = attribute && !is_text_attribute(attribute);
 

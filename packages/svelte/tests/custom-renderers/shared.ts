@@ -9,6 +9,7 @@ import renderer, {
 	create_root,
 	serialize,
 	dispatch_event,
+	native_change,
 	type ObjFragment,
 	type ObjElement,
 	type ObjNode
@@ -56,6 +57,7 @@ interface CustomRendererHydrateTest extends BaseTest {
 		renderer: typeof renderer;
 		serialize: typeof serialize;
 		dispatch_event: typeof dispatch_event;
+		native_change: typeof native_change;
 	}) => void | Promise<void>;
 }
 
@@ -93,6 +95,7 @@ interface CustomRendererNonHydrateTest extends BaseTest {
 		renderer: typeof renderer;
 		serialize: typeof serialize;
 		dispatch_event: typeof dispatch_event;
+		native_change: typeof native_change;
 	}) => void | Promise<void>;
 }
 
@@ -275,7 +278,8 @@ async function run_test(cwd: string, config: CustomRendererTest, compile_options
 					warnings,
 					renderer: renderer,
 					serialize,
-					dispatch_event
+					dispatch_event,
+					native_change
 				});
 			}
 
@@ -346,7 +350,8 @@ async function run_hydration_test(
 				warnings,
 				renderer: renderer,
 				serialize,
-				dispatch_event
+				dispatch_event,
+				native_change
 			});
 		}
 	} finally {

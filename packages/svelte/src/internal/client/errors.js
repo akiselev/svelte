@@ -75,6 +75,23 @@ export function bind_not_bindable(key, component, name) {
 }
 
 /**
+ * The custom renderer does not support `bind:%name%` on elements. A renderer must implement `bind` to support element bindings other than `bind:this`
+ * @param {string} name
+ * @returns {never}
+ */
+export function bind_unsupported_by_renderer(name) {
+	if (DEV) {
+		const error = new Error(`bind_unsupported_by_renderer\nThe custom renderer does not support \`bind:${name}\` on elements. A renderer must implement \`bind\` to support element bindings other than \`bind:this\`\nhttps://svelte.dev/e/bind_unsupported_by_renderer`);
+
+		error.name = 'Svelte error';
+
+		throw error;
+	} else {
+		throw new Error(`https://svelte.dev/e/bind_unsupported_by_renderer`);
+	}
+}
+
+/**
  * Calling `%method%` on a component instance (of %component%) is no longer valid in Svelte 5
  * @param {string} method
  * @param {string} component

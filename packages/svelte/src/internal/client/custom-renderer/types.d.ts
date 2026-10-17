@@ -91,6 +91,27 @@ export type Renderer<
 	/** Remove an event listener of the given type and handler from the target node. */
 	removeEventListener(target: TElement, type: string, handler: any, options?: any): void;
 
+	/**
+	 * Called for `bind:<name>` on an element, for any `name` except `this` and `group`.
+	 * The renderer decides what the binding means for the element, subscribes to the native
+	 * change and calls `set(value)` with the (normalized) native value. `get` reads the current
+	 * state value without tracking it. Throw to reject a binding the element does not support.
+	 *
+	 * If the returned object has `update`, it is called with the state value once initially,
+	 * then every time the state changes (always synchronously from a render effect, never from
+	 * within `set`), and also after a `set` whose value the state did not take (rejected or
+	 * transformed by a function binding). `destroy` is called when the element's binding
+	 * is torn down.
+	 *
+	 * Read-only bindings (such as dimensions) only call `set` and omit `update`.
+	 */
+	bind?(
+		element: TElement,
+		name: string,
+		get: () => any,
+		set: (value: any) => void
+	): RendererBinding | void;
+
 	/** Operations used when this renderer is interleaved with DOM or another custom renderer. */
 	foreign?: {
 		/**
@@ -139,6 +160,13 @@ export type Renderer<
 		/** Remove a node that was inserted across renderer boundaries. */
 		removeFromForeign(node: TNode): void;
 	};
+};
+
+export type RendererBinding = {
+	/** Push a state value to the native element. */
+	update?(value: any): void;
+	/** Release native subscriptions. */
+	destroy?(): void;
 };
 
 type DefinedRendererNodes<TNodes extends RendererNodes<any, any, any, any, any> | undefined> =

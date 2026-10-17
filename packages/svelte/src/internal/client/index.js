@@ -74,6 +74,7 @@ export {
 	set_default_select_value
 } from './dom/elements/bindings/select.js';
 export { bind_element_size, bind_resize_observer } from './dom/elements/bindings/size.js';
+export { bind_renderer } from './dom/elements/bindings/renderer.js';
 export { bind_this } from './dom/elements/bindings/this.js';
 export {
 	bind_content_editable,

@@ -1,7 +1,7 @@
 /** @import { CallExpression, Expression, Pattern } from 'estree' */
 /** @import { AST } from '#compiler' */
 /** @import { ComponentContext } from '../types' */
-import { dev, ignore_map, is_ignored } from '../../../../state.js';
+import { custom_renderer, dev, ignore_map, is_ignored } from '../../../../state.js';
 import { is_text_attribute } from '../../../../utils/ast.js';
 import * as b from '#compiler/builders';
 import { binding_properties } from '../../../bindings.js';
@@ -75,7 +75,9 @@ export function BindDirective(node, context) {
 	/** @type {CallExpression} */
 	let call;
 
-	if (property?.event) {
+	if (custom_renderer && node.name !== 'this') {
+		call = b.call('$.bind_renderer', context.state.node, b.literal(node.name), get, set);
+	} else if (property?.event) {
 		call = b.call(
 			'$.bind_property',
 			b.literal(node.name),

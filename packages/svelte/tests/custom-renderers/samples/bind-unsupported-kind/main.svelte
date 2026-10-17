@@ -2,4 +2,4 @@
 	let value = $state('');
 </script>
 
-<input bind:value />
+<label bind:value></label>

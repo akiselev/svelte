@@ -15,6 +15,12 @@ export type ObjElement = {
 	children: ObjNode[];
 	elements_children: Array<HTMLElement | DocumentFragment | Text | Comment>;
 	listeners: Record<string, Array<{ handler: any; options?: any }>>;
+	/** Native property values for `bind:`; written by `bind().update` and by `native_change` */
+	native: Record<string, unknown>;
+	/** Log of programmatic writes to `native`, as `name=value` */
+	native_writes: string[];
+	/** Active bindings by name; `set` is the callback `bind` received */
+	bound: Record<string, { set: (value: any) => void }>;
 	parent: ObjNode | null;
 };
 type ObjText = { type: 'text'; value: string; parent: ObjNode | null };
@@ -85,6 +91,13 @@ const mounted = new Map<
 	ObjElement | ObjFragment
 >();
 
+function add_hidden<T extends object, P extends object>(target: T, props: P): T {
+	for (const [key, value] of Object.entries(props)) {
+		Object.defineProperty(target, key, { value, enumerable: false });
+	}
+	return target;
+}
+
 const renderer = createRenderer<{
 	fragment: ObjFragment;
 	element: ObjElement;
@@ -107,7 +120,7 @@ const renderer = createRenderer<{
 	},
 
 	createElement(name) {
-		return {
+		const element = {
 			type: 'element',
 			name,
 			attributes: {},
@@ -115,7 +128,9 @@ const renderer = createRenderer<{
 			listeners: {},
 			parent: null,
 			elements_children: []
-		};
+		} as ObjElement;
+		// non-enumerable so that serialized trees are unchanged for tests that don't bind
+		return add_hidden(element, { native: {}, native_writes: [], bound: {} });
 	},
 
 	createTextNode(data) {
@@ -208,6 +223,42 @@ const renderer = createRenderer<{
 		);
 	},
 
+	bind(element, name, get, set) {
+		if (element.name === 'label' && name === 'value') {
+			throw new Error(`bind:${name} is not supported on <${element.name}>`);
+		}
+
+		const max = element.attributes.max === undefined ? Infinity : Number(element.attributes.max);
+		const clamp = (value: any) => (typeof value === 'number' ? Math.min(value, max) : value);
+
+		element.bound[name] = { set };
+
+		// dimensions are read-only: the renderer reports them and never takes a state value
+		if (name === 'width' || name === 'height') {
+			return { destroy: () => delete element.bound[name] };
+		}
+
+		if (get() == null && element.native[name] !== undefined) {
+			set(element.native[name]);
+		}
+
+		return {
+			update(value) {
+				const next = clamp(value);
+				// echo suppression by comparison: the native side already has this value
+				if (element.native[name] !== next) {
+					element.native[name] = next;
+					element.native_writes.push(`${name}=${next}`);
+				}
+				// clamped read-back: the native side holds a different value than the state
+				if (next !== value) set(next);
+			},
+			destroy() {
+				delete element.bound[name];
+			}
+		};
+	},
+
 	foreign: {
 		insertForeign(parent, element, anchor) {
 			parent.elements_children.push(element);
@@ -257,6 +308,16 @@ export function dispatch_event(node: any, type: string, detail?: any) {
 	for (const { handler } of listeners) {
 		handler(event);
 	}
+}
+
+/**
+ * Simulate the user changing a native property: stores the (clamped) value and
+ * fires the native change signal at the binding.
+ */
+export function native_change(node: any, name: string, value: any) {
+	const max = node.attributes.max === undefined ? Infinity : Number(node.attributes.max);
+	node.native[name] = typeof value === 'number' ? Math.min(value, max) : value;
+	node.bound[name].set(node.native[name]);
 }
 
 /**
